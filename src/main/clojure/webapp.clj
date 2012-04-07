@@ -46,12 +46,7 @@
         cross (ShapeUtilities/createDiagonalCross 3 1)
         out-stream (ByteArrayOutputStream.)
         header {:status 200
-                :headers {"Content-Type" "image/png"}}
-;        in-stream
-;         (do
-;           (save plot out-stream)
-;           (ByteArrayInputStream. (.toByteArray out-stream)))
-        ]
+                :headers {"Content-Type" "image/png"}}]
     (do
       (doto
         plot
@@ -59,12 +54,6 @@
         (add-latex 2.5 50 equation))
       (save plot out-stream)
       (ByteArrayInputStream. (.toByteArray out-stream)))))
-;     in-stream))
-
-;    (doto
-;      plot
-;      (add-function #(Math/pow % (:coefs loglog-lm)) 1 4)
-;      (add-latex 2.5 50 equation))))
 
 (defroutes webservice
   (GET "/" [] sample-form)
