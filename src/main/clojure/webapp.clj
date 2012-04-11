@@ -1,6 +1,6 @@
 (ns webapp
   (:gen-class)
-  (:use [compojure core response]
+  (:use [compojure core response route]
         [incanter io charts core latex datasets stats ]
         [hiccup core form page]
         [ring.adapter jetty])
@@ -14,10 +14,15 @@
     (doctype :html4)
     [:html
       [:head
-        [:title title]]
+       (include-css "./styles/style.css")
+       (include-js "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+       (include-js "./js/rambo-kill-stats.js")
+        [:title "Kill Statistics in the four Rambo movies"]]
       [:body
-       [:div
-         [:h2 "Various statistics from the four Rambo movies"	 ]]
+       [:div#content
+         [:h2 "Kill statistics from the four Rambo movies"]]
+       [:div#chart-container
+         [:img#chart-image {:src ""}]]
         body]]))
 
 (def *data* (atom []))
@@ -26,10 +31,17 @@
   (reset! *data*
     (read-dataset (.getFile (clojure.java.io/resource "rambo-kill-stats.csv")) :header true)))
 
+;(def sample-form
+;  (html-doc "Kill Statistics in the four Rambo movies"
+;    (form-to [:get "/kills-with-shirt-on"]
+;      (submit-button "Kills with shirt on"))))
+
 (def sample-form
   (html-doc "Kill Statistics in the four Rambo movies"
-    (form-to [:get "/kills-with-shirt-on"]
-      (submit-button "Kills with shirt on"))))
+    [:select {:id "chart-select"}
+      [:option {:value "" :selected true} "Select a chart"]
+      [:option {:value "./kills-with-shirt-on"} "Kills with shirt on"]
+      [:option {:value "./kills-with-shirt-off"} "Kills with shirt off"]]))
 
 (defn kills-with-shirt-on []
   ; Note that the current docos on read-dataset appear to be wrong;
@@ -97,7 +109,8 @@
   (GET "/kills-with-shirt-on" []
     {:status 200
      :headers {"Content-Type" "image/png"}
-     :body (kills-with-shirt-on)}))
+     :body (kills-with-shirt-on)})
+  (resources "/"))
 
 (defn -main [& args]
   (do
