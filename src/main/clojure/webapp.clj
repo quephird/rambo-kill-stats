@@ -8,13 +8,25 @@
                     ByteArrayInputStream)
            org.jfree.util.ShapeUtilities))
 
-(defn html-doc
-  [title & body]
+(def *data* (atom []))
+
+(defn- load-data []
+  (reset! *data*
+    (read-dataset (.getFile (clojure.java.io/resource "rambo-kill-stats.csv")) :header true)))
+
+(defn- write-to-out-stream
+  [plot]
+  (let [out-stream (ByteArrayOutputStream.)]
+    (do
+      (save plot out-stream)
+      (ByteArrayInputStream. (.toByteArray out-stream)))))
+
+(defn main-html []
   (html
     (doctype :html4)
     [:html
       [:head
-       (include-css "./styles/style.css")
+       (include-css "./styles/rambo-kill-stats.css")
        (include-js "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
        (include-js "./js/rambo-kill-stats.js")
         [:title "Kill Statistics in the four Rambo movies"]]
@@ -23,25 +35,12 @@
          [:h2 "Kill statistics from the four Rambo movies"]]
        [:div#chart-container
          [:img#chart-image {:src ""}]]
-        body]]))
-
-(def *data* (atom []))
-
-(defn- load-data []
-  (reset! *data*
-    (read-dataset (.getFile (clojure.java.io/resource "rambo-kill-stats.csv")) :header true)))
-
-;(def sample-form
-;  (html-doc "Kill Statistics in the four Rambo movies"
-;    (form-to [:get "/kills-with-shirt-on"]
-;      (submit-button "Kills with shirt on"))))
-
-(def sample-form
-  (html-doc "Kill Statistics in the four Rambo movies"
-    [:select {:id "chart-select"}
-      [:option {:value "" :selected true} "Select a chart"]
-      [:option {:value "./kills-with-shirt-on"} "Kills with shirt on"]
-      [:option {:value "./kills-with-shirt-off"} "Kills with shirt off"]]))
+       [:select {:id "chart-select"}
+         [:option {:value "" :selected true} "Select a chart"]
+         [:option {:value "./kills-with-shirt-on"} "Kills with shirt on"]
+         [:option {:value "./kills-with-shirt-off"} "Kills with shirt off"]
+         [:option {:value "./kills-by-rambo"} "Kills by Rambo irrespective of shirt status"]
+         ]]]))
 
 (defn kills-with-shirt-on []
   ; Note that the current docos on read-dataset appear to be wrong;
@@ -58,15 +57,12 @@
             x y
             :x-label "Movie number"
             :y-label "# of kills")
-        cross (ShapeUtilities/createDiagonalCross 3 1)
-        out-stream (ByteArrayOutputStream.)]
-    (do
+        cross (ShapeUtilities/createDiagonalCross 3 1)]
+    (write-to-out-stream
       (doto
         plot
         (add-function #(Math/pow % (:coefs loglog-lm)) 1 5)
-        (add-latex 3 125 equation))
-      (save plot out-stream)
-      (ByteArrayInputStream. (.toByteArray out-stream)))))
+        (add-latex 3 125 equation)))))
 
 (defn kills-with-shirt-off []
   (let [x (sel @*data* :cols 0)
@@ -75,12 +71,8 @@
           (scatter-plot
             x y
             :x-label "Movie number"
-            :y-label "# of kills")
-        cross (ShapeUtilities/createDiagonalCross 3 1)
-        out-stream (ByteArrayOutputStream.)]
-    (do
-      (save plot out-stream)
-      (ByteArrayInputStream. (.toByteArray out-stream)))))
+            :y-label "# of kills")]
+    (write-to-out-stream plot)))
 
 (defn kills-by-rambo []
   (let [x (sel @*data* :cols 0)
@@ -89,15 +81,11 @@
           (scatter-plot
             x y
             :x-label "Movie number"
-            :y-label "# of kills")
-        cross (ShapeUtilities/createDiagonalCross 3 1)
-        out-stream (ByteArrayOutputStream.)]
-    (do
-      (save plot out-stream)
-      (ByteArrayInputStream. (.toByteArray out-stream)))))
+            :y-label "# of kills")]
+    (write-to-out-stream plot)))
 
 (defroutes webservice
-  (GET "/" [] sample-form)
+  (GET "/" [] (main-html))
   (GET "/kills-by-rambo" []
     {:status 200
      :headers {"Content-Type" "image/png"}
