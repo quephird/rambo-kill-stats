@@ -46,6 +46,9 @@
          [:option {:value "./kills-with-shirt-on"} "Kills with shirt on"]
          [:option {:value "./kills-with-shirt-off"} "Kills with shirt off"]
          [:option {:value "./kills-by-rambo"} "Kills by Rambo irrespective of shirt status"]
+         [:option {:value "./kills-by-accomplices"} "Kills by Rambo's accomplices"]
+         [:option {:value "./kills-by-bad-guys"} "Kills by bad guys"]
+         [:option {:value "./total-kills"} "Total guys killed"]
          ]]]))
 
 (defn kills-with-shirt-on []
@@ -90,6 +93,34 @@
             :y-label "# of kills")]
     (write-to-out-stream plot)))
 
+(defn kills-by-accomplices []
+  (let [x (sel @*data* :cols 0)
+        y (sel @*data* :cols 3)
+        plot
+          (scatter-plot
+            x y
+            :x-label "Movie number"
+            :y-label "# of kills")]
+    (write-to-out-stream plot)))
+
+(defn kills-by-bad-guys []
+  (let [x (sel @*data* :cols 0)
+        y (sel @*data* :cols 4)
+        plot
+          (scatter-plot
+            x y
+            :x-label "Movie number"
+            :y-label "# of kills")]
+    (write-to-out-stream plot)))
+
+(defn total-kills []
+  (let [x (apply interleave (repeat 4 (sel @*data* :cols 0)))
+        y (interleave (sel @*data* :cols 1) (sel @*data* :cols 2) (sel @*data* :cols 3) (sel @*data* :cols 4))
+        groupings (flatten (repeat 4 ["Shirt on" "Shirt off" "Accomplices" "Bad guys"]))
+        plot
+          (stacked-bar-chart x y :legend true :group-by groupings)]
+    (write-to-out-stream plot)))
+
 (defroutes webservice
   (GET "/" [] (main-html))
   (GET "/kills-by-rambo" []
@@ -104,6 +135,18 @@
     {:status 200
      :headers {"Content-Type" "image/png"}
      :body (kills-with-shirt-on)})
+  (GET "/kills-by-accomplices" []
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body (kills-by-accomplices)})
+  (GET "/kills-by-bad-guys" []
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body (kills-by-bad-guys)})
+  (GET "/total-kills" []
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body (total-kills)})
   (resources "/"))
 
 (defn -main [& args]
