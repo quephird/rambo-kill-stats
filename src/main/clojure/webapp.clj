@@ -10,6 +10,12 @@
 
 (def *data* (atom []))
 
+(defn- determine-port-number []
+  (let [env-port (System/getenv "PORT")]
+    (if (nil? env-port)
+      8080
+      (Integer/parseInt env-port))))
+
 (defn- load-data []
   (reset! *data*
     (read-dataset (.getFile (clojure.java.io/resource "rambo-kill-stats.csv")) :header true)))
@@ -103,4 +109,4 @@
 (defn -main [& args]
   (do
     (load-data)
-    (run-jetty (var webservice) {:port 8080})))
+    (run-jetty (var webservice) {:port (determine-port-number)})))
