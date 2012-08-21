@@ -18,4 +18,4 @@ The last step will launch Jetty; point your browser to http://localhost:8080 and
 
 ## ... or see it in action. TO THE CLOUD!!11elvnty!!
 
-    http://rambo-kill-stats.herokuapp.com
+http://rambo-kill-stats.herokuapp.com
