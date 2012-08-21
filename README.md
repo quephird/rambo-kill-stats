@@ -10,12 +10,12 @@ I thought, "AHA!", here is an opportunity.
 This project uses Leiningen, version 1.5.2 or greater, so you will need to get it in order to run this locally.
 After downloading the project, run the following steps:
 
-lein deps
-lein uberjar
-lein run
+    lein deps
+    lein uberjar
+    lein run
 
 The last step will launch Jetty; point your browser to http://localhost:8080 and you should see the main page.
 
 ## ... or see it in action. TO THE CLOUD!!11elvnty!!
 
-http://rambo-kill-stats.herokuapp.com
+    http://rambo-kill-stats.herokuapp.com
